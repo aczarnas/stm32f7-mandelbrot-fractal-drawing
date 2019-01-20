@@ -54,7 +54,6 @@
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
-static void Error_Handler(void);
 static void CPU_CACHE_Enable(void);
 
 volatile short flag = 0;
@@ -126,6 +125,8 @@ void drawMandelbrotWithBSP(int scale, int iterations) {
 //void drawMandelbrotAlternative(int scale, int iterations) {
 //	int ImageHeight = 272;
 //	int ImageWidth = 480;
+//
+//
 //}
 
 /* Private functions ---------------------------------------------------------*/
@@ -167,9 +168,6 @@ int main(void) {
 	PeriphClkInitStruct.PLLSAIDivR = RCC_PLLSAIDIVR_4;
 	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
 
-	/* Configure LED1 */
-	BSP_LED_Init(LED1);
-
 	/* Configure LCD : Only one layer is used */
 	BSP_LCD_Init();
 
@@ -178,20 +176,12 @@ int main(void) {
 
 	/* LCD Initialization */
 	BSP_LCD_LayerDefaultInit(0, LCD_FB_START_ADDRESS);
-	BSP_LCD_LayerDefaultInit(1,
-	LCD_FB_START_ADDRESS + (BSP_LCD_GetXSize() * BSP_LCD_GetYSize() * 4));
 
 	/* Enable the LCD */
 	BSP_LCD_DisplayOn();
 
 	/* Select the LCD Background Layer  */
 	BSP_LCD_SelectLayer(0);
-
-	/* Clear the Background Layer */
-	BSP_LCD_Clear(LCD_COLOR_BLACK);
-
-//	/* Select the LCD Foreground Layer  */
-	BSP_LCD_SelectLayer(1);
 
 	int iterations = 1;
 
