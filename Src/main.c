@@ -180,6 +180,8 @@ int main(void) {
 			if (!ts.touchDetected) {
 				flag = 0;
 				globalScale++;
+				centerX = BSP_LCD_GetXSize() / ts.touchX[0];
+				centerY = BSP_LCD_GetYSize() / ts.touchY[0];
 			}
 		}
 		drawMandelbrotAlternative(globalScale, iterations++, centerX, centerY);
