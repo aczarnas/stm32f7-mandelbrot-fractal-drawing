@@ -57,20 +57,16 @@ static void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
 
 volatile uint8_t flag = 0;
-volatile uint8_t globalScale = 1;
-TS_StateTypeDef ts;
 
 void EXTI15_10_IRQHandler() {
 	__HAL_GPIO_EXTI_CLEAR_IT(TS_INT_PIN);
 	flag = 1;
 }
 
-void drawMandelbrotAlternative(uint8_t scale, uint16_t iterations,
-		uint16_t centerX, uint16_t centerY) {
+void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
+		const uint16_t centerX, const uint16_t centerY) {
 	const uint16_t ImageHeight = 272;
-	const uint8_t halfHeight = centerX;
 	const uint16_t ImageWidth = 480;
-	const uint8_t halfWidth = centerY;
 	const float fact1 = 4.0 / ImageWidth / scale;
 	float c_re = 0;
 	float c_im = 0;
@@ -87,9 +83,9 @@ void drawMandelbrotAlternative(uint8_t scale, uint16_t iterations,
 	uint16_t x, y;
 
 	for (x = 0; x < ImageHeight; x++) {
-		c_im = (x - halfHeight) * fact1;
+		c_im = (x - centerY) * fact1;
 		for (y = 0; y < ImageWidth; y++) {
-			c_re = (y - halfWidth) * fact1;
+			c_re = (y - centerX) * fact1;
 			z_re = 0;
 			z_re_temp = 0;
 			z_im_temp = 0;
@@ -169,8 +165,9 @@ int main(void) {
 	BSP_LCD_SelectLayer(0);
 
 	TS_StateTypeDef ts;
-	uint16_t centerX = 136;
-	uint16_t centerY = 240;
+	uint8_t globalScale = 1;
+	uint16_t centerX = 240;
+	uint16_t centerY = 136;
 
 	uint16_t iterations = 1;
 
@@ -180,8 +177,8 @@ int main(void) {
 			if (!ts.touchDetected) {
 				flag = 0;
 				globalScale++;
-				centerX = BSP_LCD_GetXSize() / ts.touchX[0];
-				centerY = BSP_LCD_GetYSize() / ts.touchY[0];
+				centerX = ts.touchX[0];
+				centerY = ts.touchY[0];
 			}
 		}
 		drawMandelbrotAlternative(globalScale, iterations++, centerX, centerY);
