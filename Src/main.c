@@ -67,7 +67,8 @@ void EXTI15_10_IRQHandler() {
 //	globalScale++;
 }
 
-void drawMandelbrotAlternative(uint8_t scale, uint8_t iterations, uint16_t centerX, uint16_t centerY) {
+void drawMandelbrotAlternative(uint8_t scale, uint8_t iterations,
+		uint16_t centerX, uint16_t centerY) {
 	const uint16_t ImageHeight = 272;
 	const uint8_t halfHeight = centerX;
 	const uint16_t ImageWidth = 480;
@@ -176,9 +177,13 @@ int main(void) {
 	int iterations = 1;
 
 	while (1) {
-//		if(flag) {
-//			if()
-//		}
+		if (flag) {
+			BSP_TS_GetState(&ts);
+			if (!ts.touchDetected) {
+				flag = 0;
+				globalScale++;
+			}
+		}
 		drawMandelbrotAlternative(globalScale, iterations++, centerX, centerY);
 		HAL_Delay(5);
 	}
