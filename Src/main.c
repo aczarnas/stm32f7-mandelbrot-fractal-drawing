@@ -67,7 +67,8 @@ void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
 		const uint16_t centerX, const uint16_t centerY) {
 	const uint16_t ImageHeight = 272;
 	const uint16_t ImageWidth = 480;
-	const float fact1 = 4.0 / ImageWidth / scale;
+	const float factorWidth = 4.0 / ImageWidth / scale;
+	const float factorHeight = 4.0 / ImageHeight / scale;
 	float c_re = 0;
 	float c_im = 0;
 	float z_re = 0;
@@ -83,9 +84,9 @@ void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
 	uint16_t x, y;
 
 	for (x = 0; x < ImageHeight; x++) {
-		c_im = (x - centerY) * fact1;
+		c_im = (x - centerY) * factorWidth;
 		for (y = 0; y < ImageWidth; y++) {
-			c_re = (y - centerX) * fact1;
+			c_re = (y - centerX) * factorWidth;
 			z_re = 0;
 			z_re_temp = 0;
 			z_im_temp = 0;
@@ -177,8 +178,8 @@ int main(void) {
 			if (!ts.touchDetected) {
 				flag = 0;
 				globalScale++;
-				centerX = ts.touchX[0];
-				centerY = ts.touchY[0];
+				centerX = BSP_LCD_GetXSize() - ts.touchX[0];
+				centerY = BSP_LCD_GetYSize() - ts.touchY[0];
 			}
 		}
 		drawMandelbrotAlternative(globalScale, iterations++, centerX, centerY);
