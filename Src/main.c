@@ -66,97 +66,54 @@ void EXTI15_10_IRQHandler() {
 	flag = 1;
 }
 
-void drawMandelbrotWithBSP(int scale, int iterations) {
-	int ImageHeight = 272;
-	int ImageWidth = 480;
-	float MinRe = -2.0;
-	float MaxRe = 1.0;
-	float MinIm = -0.9;
-	float MaxIm = MinIm + (MaxRe - MinRe) * ImageHeight / ImageWidth;
-	float Re_factor = (MaxRe - MinRe) / (ImageWidth * scale - 1);
-	float Im_factor = (MaxIm - MinIm) / (ImageHeight * scale - 1);
-
-	float c_im = 0;
-	float c_re = 0;
-	float Z_re = 0;
-	float Z_re2 = 0;
-	float Z_im = 0;
-	float Z_im2 = 0;
-
-	for (unsigned y = 0; y < ImageHeight; ++y) {
-		c_im = MaxIm - y * Im_factor;
-		for (unsigned x = 0; x < ImageWidth; ++x) {
-			if (flag == 1) {
-				globalScale++;
-				flag = 0;
-				return;
-			}
-			c_re = MinRe + x * Re_factor;
-
-			Z_re = c_re;
-			Z_im = c_im;
-			char isInside = 1;
-			uint8_t shade;
-			for (unsigned n = 0; n < iterations; ++n) {
-				Z_re2 = Z_re * Z_re;
-				Z_im2 = Z_im * Z_im;
-				if (Z_re2 + Z_im2 > 4) {
-					isInside = 0;
-					if (n) {
-						shade = n * 255 / iterations;
-					}
-					break;
-				}
-				Z_im = 2 * Z_re * Z_im + c_im;
-				Z_re = Z_re2 - Z_im2 + c_re;
-			}
-			if (isInside) {
-				BSP_LCD_DrawPixel(x, y, 0xFF000000);
-			} else {
-				uint32_t col = (255 << 16) + (shade << 24);
-				BSP_LCD_DrawPixel(x, y, col);
-			}
-		}
-	}
-}
-
 void drawMandelbrotAlternative(int scale, int iterations) {
-	unsigned short ImageHeight = 272;
-	unsigned short ImageWidth = 480;
+	uint16_t ImageHeight = 272;
+	uint8_t halfHeight = 136;
+	uint16_t ImageWidth = 480;
+	uint8_t halfWidth = 240;
+	float fact1 = 4.0 / ImageWidth;
 	float c_re = 0;
 	float c_im = 0;
 	float z_re = 0;
 	float z_re_temp = 0;
+	float z_im_temp = 0;
 	float z_im = 0;
-	unsigned short n = 0;
+	uint8_t n = 0;
 	uint8_t shade = 255;
 	uint32_t col = 0xFFFF0000;
+	char isInside = 1;
+	uint16_t x, y;
 
-	for (unsigned short x = 0; x < ImageHeight; x++) {
-		for (unsigned short y = 0; y < ImageWidth; y++) {
-			c_re = (y - ImageWidth / 2) * 4.0 / ImageWidth;
-			c_im = (x - ImageHeight / 2) * 4.0 / ImageWidth;
+	for (x = 0; x < ImageHeight; x++) {
+		c_im = (x - halfHeight) * fact1;
+		for (y = 0; y < ImageWidth; y++) {
+			c_re = (y - halfWidth) * fact1;
 			z_re = 0;
 			z_re_temp = 0;
+			z_im_temp = 0;
 			z_im = 0;
-			n = 0;
-			while (z_re * z_re + z_im * z_im < 4 && n < iterations) {
-				z_re_temp = z_re * z_re - z_im * z_im + c_re;
+			isInside = 1;
+
+			for (n = 0; n < iterations; n++) {
+				z_re_temp = z_re * z_re;
+				z_im_temp = z_im * z_im;
+				if (z_re_temp + z_im_temp > 4) {
+					isInside = 0;
+					break;
+				}
 				z_im = 2 * z_re * z_im + c_im;
-				z_re = z_re_temp;
-				n++;
+				z_re = z_re_temp - z_im_temp + c_re;
 			}
-			if (n < iterations) {
+			if (isInside) {
+				BSP_LCD_DrawPixel(y, x, 0xFF000000);
+			} else {
 				shade = n * 255 / iterations;
 				col = (255 << 16) + (shade << 24);
 				BSP_LCD_DrawPixel(y, x, col);
-			} else {
-				BSP_LCD_DrawPixel(y, x, 0xFF000000);
 			}
 		}
 	}
 }
-
 int main(void) {
 	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
 
