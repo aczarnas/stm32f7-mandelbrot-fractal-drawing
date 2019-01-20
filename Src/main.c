@@ -56,18 +56,16 @@
 static void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
 
-volatile short flag = 0;
-volatile int globalScale = 1;
+volatile uint8_t flag = 0;
+volatile uint8_t globalScale = 1;
 TS_StateTypeDef ts;
 
 void EXTI15_10_IRQHandler() {
-	// check touch release rather than touch pressed
 	__HAL_GPIO_EXTI_CLEAR_IT(TS_INT_PIN);
 	flag = 1;
-//	globalScale++;
 }
 
-void drawMandelbrotAlternative(uint8_t scale, uint8_t iterations,
+void drawMandelbrotAlternative(uint8_t scale, uint16_t iterations,
 		uint16_t centerX, uint16_t centerY) {
 	const uint16_t ImageHeight = 272;
 	const uint8_t halfHeight = centerX;
@@ -110,13 +108,13 @@ void drawMandelbrotAlternative(uint8_t scale, uint8_t iterations,
 			}
 			if (isInside) {
 				BSP_LCD_DrawPixel(y, x, 0xFF000000);
-			} else if (n < halfIt) {
+			} else if (n > halfIt) {
 				shade_red = n * color_factor;
-				col = (shade_red << 16) + (255 << 24);
+				col = (shade_red << 8) + (shade_red << 16) + (255 << 24);
 				BSP_LCD_DrawPixel(y, x, col);
 			} else {
 				shade_red = n * color_factor;
-				col = (shade_red << 8) + (shade_red << 16) + (255 << 24);
+				col = (shade_red << 16) + (255 << 24);
 				BSP_LCD_DrawPixel(y, x, col);
 			}
 		}
@@ -174,7 +172,7 @@ int main(void) {
 	uint16_t centerX = 136;
 	uint16_t centerY = 240;
 
-	int iterations = 1;
+	uint16_t iterations = 1;
 
 	while (1) {
 		if (flag) {
