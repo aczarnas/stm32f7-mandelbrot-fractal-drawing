@@ -68,8 +68,8 @@ void EXTI15_10_IRQHandler() {
 }
 
 void drawMandelbrotWithBSP(int scale, int iterations) {
-	int ImageHeight = 272.0;
-	int ImageWidth = 480.0;
+	int ImageHeight = 272;
+	int ImageWidth = 480;
 	float MinRe = -2.0;
 	float MaxRe = 1.0;
 	float MinIm = -0.9;
@@ -97,25 +97,36 @@ void drawMandelbrotWithBSP(int scale, int iterations) {
 			Z_re = c_re;
 			Z_im = c_im;
 			char isInside = 1;
+			uint8_t shade;
 			for (unsigned n = 0; n < iterations; ++n) {
 				Z_re2 = Z_re * Z_re;
 				Z_im2 = Z_im * Z_im;
 				if (Z_re2 + Z_im2 > 4) {
 					isInside = 0;
+					if (n) {
+						shade = n * 255 / iterations;
+					} /*else {
+						shade = 255;
+					}*/
 					break;
 				}
 				Z_im = 2 * Z_re * Z_im + c_im;
 				Z_re = Z_re2 - Z_im2 + c_re;
 			}
 			if (isInside) {
-				BSP_LCD_DrawPixel(x, y, LCD_COLOR_BLACK);
+				BSP_LCD_DrawPixel(x, y, 0xFF000000);
 			} else {
-				BSP_LCD_DrawPixel(x, y, LCD_COLOR_WHITE);
+				uint32_t col = (255 << 16) + (shade << 24);
+				BSP_LCD_DrawPixel(x, y, col);
 			}
 		}
 	}
-
 }
+
+//void drawMandelbrotAlternative(int scale, int iterations) {
+//	int ImageHeight = 272;
+//	int ImageWidth = 480;
+//}
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -253,18 +264,6 @@ void SystemClock_Config(void) {
 		while (1) {
 			;
 		}
-	}
-}
-
-/**
- * @brief  This function is executed in case of error occurrence.
- * @param  None
- * @retval None
- */
-static void Error_Handler(void) {
-	/* Turn LED1 on */
-	BSP_LED_On(LED1);
-	while (1) {
 	}
 }
 
