@@ -64,14 +64,15 @@ void EXTI15_10_IRQHandler() {
 	// check touch release rather than touch pressed
 	__HAL_GPIO_EXTI_CLEAR_IT(TS_INT_PIN);
 	flag = 1;
+//	globalScale++;
 }
 
-void drawMandelbrotAlternative(int scale, int iterations) {
+void drawMandelbrotAlternative(uint8_t scale, uint8_t iterations, uint16_t centerX, uint16_t centerY) {
 	const uint16_t ImageHeight = 272;
-	const uint8_t halfHeight = 136;
+	const uint8_t halfHeight = centerX;
 	const uint16_t ImageWidth = 480;
-	const uint8_t halfWidth = 240;
-	const float fact1 = 4.0 / ImageWidth;
+	const uint8_t halfWidth = centerY;
+	const float fact1 = 4.0 / ImageWidth / scale;
 	float c_re = 0;
 	float c_im = 0;
 	float z_re = 0;
@@ -120,6 +121,7 @@ void drawMandelbrotAlternative(int scale, int iterations) {
 		}
 	}
 }
+
 int main(void) {
 	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
 
@@ -167,10 +169,17 @@ int main(void) {
 	/* Select the LCD Background Layer  */
 	BSP_LCD_SelectLayer(0);
 
+	TS_StateTypeDef ts;
+	uint16_t centerX = 136;
+	uint16_t centerY = 240;
+
 	int iterations = 1;
 
 	while (1) {
-		drawMandelbrotAlternative(globalScale, iterations++);
+//		if(flag) {
+//			if()
+//		}
+		drawMandelbrotAlternative(globalScale, iterations++, centerX, centerY);
 		HAL_Delay(5);
 	}
 }
