@@ -104,9 +104,7 @@ void drawMandelbrotWithBSP(int scale, int iterations) {
 					isInside = 0;
 					if (n) {
 						shade = n * 255 / iterations;
-					} /*else {
-						shade = 255;
-					}*/
+					}
 					break;
 				}
 				Z_im = 2 * Z_re * Z_im + c_im;
@@ -122,20 +120,43 @@ void drawMandelbrotWithBSP(int scale, int iterations) {
 	}
 }
 
-//void drawMandelbrotAlternative(int scale, int iterations) {
-//	int ImageHeight = 272;
-//	int ImageWidth = 480;
-//
-//
-//}
+void drawMandelbrotAlternative(int scale, int iterations) {
+	unsigned short ImageHeight = 272;
+	unsigned short ImageWidth = 480;
+	float c_re = 0;
+	float c_im = 0;
+	float z_re = 0;
+	float z_re_temp = 0;
+	float z_im = 0;
+	unsigned short n = 0;
+	uint8_t shade = 255;
+	uint32_t col = 0xFFFF0000;
 
-/* Private functions ---------------------------------------------------------*/
+	for (unsigned short x = 0; x < ImageHeight; x++) {
+		for (unsigned short y = 0; y < ImageWidth; y++) {
+			c_re = (y - ImageWidth / 2) * 4.0 / ImageWidth;
+			c_im = (x - ImageHeight / 2) * 4.0 / ImageWidth;
+			z_re = 0;
+			z_re_temp = 0;
+			z_im = 0;
+			n = 0;
+			while (z_re * z_re + z_im * z_im < 4 && n < iterations) {
+				z_re_temp = z_re * z_re - z_im * z_im + c_re;
+				z_im = 2 * z_re * z_im + c_im;
+				z_re = z_re_temp;
+				n++;
+			}
+			if (n < iterations) {
+				shade = n * 255 / iterations;
+				col = (255 << 16) + (shade << 24);
+				BSP_LCD_DrawPixel(y, x, col);
+			} else {
+				BSP_LCD_DrawPixel(y, x, 0xFF000000);
+			}
+		}
+	}
+}
 
-/**
- * @brief   Main program
- * @param  None
- * @retval None
- */
 int main(void) {
 	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
 
@@ -186,7 +207,7 @@ int main(void) {
 	int iterations = 1;
 
 	while (1) {
-		drawMandelbrotWithBSP(globalScale, iterations++);
+		drawMandelbrotAlternative(globalScale, iterations++);
 		HAL_Delay(5);
 	}
 }
