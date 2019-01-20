@@ -1,4 +1,5 @@
 Debug/
+*.launch
 
 # Object files
 *.o
