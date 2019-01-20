@@ -67,11 +67,11 @@ void EXTI15_10_IRQHandler() {
 }
 
 void drawMandelbrotAlternative(int scale, int iterations) {
-	uint16_t ImageHeight = 272;
-	uint8_t halfHeight = 136;
-	uint16_t ImageWidth = 480;
-	uint8_t halfWidth = 240;
-	float fact1 = 4.0 / ImageWidth;
+	const uint16_t ImageHeight = 272;
+	const uint8_t halfHeight = 136;
+	const uint16_t ImageWidth = 480;
+	const uint8_t halfWidth = 240;
+	const float fact1 = 4.0 / ImageWidth;
 	float c_re = 0;
 	float c_im = 0;
 	float z_re = 0;
@@ -79,7 +79,9 @@ void drawMandelbrotAlternative(int scale, int iterations) {
 	float z_im_temp = 0;
 	float z_im = 0;
 	uint8_t n = 0;
-	uint8_t shade = 255;
+	uint8_t halfIt = iterations / 2;
+	const float color_factor = 255 / iterations;
+	uint8_t shade_red = 255;
 	uint32_t col = 0xFFFF0000;
 	char isInside = 1;
 	uint16_t x, y;
@@ -106,9 +108,13 @@ void drawMandelbrotAlternative(int scale, int iterations) {
 			}
 			if (isInside) {
 				BSP_LCD_DrawPixel(y, x, 0xFF000000);
+			} else if (n < halfIt) {
+				shade_red = n * color_factor;
+				col = (shade_red << 16) + (255 << 24);
+				BSP_LCD_DrawPixel(y, x, col);
 			} else {
-				shade = n * 255 / iterations;
-				col = (255 << 16) + (shade << 24);
+				shade_red = n * color_factor;
+				col = (shade_red << 8) + (shade_red << 16) + (255 << 24);
 				BSP_LCD_DrawPixel(y, x, col);
 			}
 		}
