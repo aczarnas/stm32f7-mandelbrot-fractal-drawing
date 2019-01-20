@@ -64,20 +64,12 @@ void EXTI15_10_IRQHandler() {
 }
 
 void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
-		const float factorX, const float factorY) {
+		const uint16_t centerX, const uint16_t centerY) {
 	const uint16_t height = 272;
-	const uint16_t centerY = height * factorY;
 	const uint16_t width = 480;
-	const uint16_t centerX = width * factorX;
 	const float scaleFactor = 4.0 / width / scale;
-	float c_re = 0;
-	float c_im = 0;
-	float z_re = 0;
-	float z_re_temp = 0;
-	float z_im_temp = 0;
-	float z_im = 0;
-	uint8_t n = 0;
-	uint8_t halfIt = iterations / 2;
+	float c_re, c_im, z_re, z_re_temp, z_im_temp, z_im, n;
+	const float halfIterations = iterations / 2;
 	const float color_factor = 255 / iterations;
 	uint8_t shade_red = 255;
 	uint32_t col = 0xFFFF0000;
@@ -85,9 +77,9 @@ void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
 	uint16_t y, x;
 
 	for (y = 0; y < height; y++) {
-		c_im = (-centerY + y) * scaleFactor;
+		c_im = (y - centerY) * scaleFactor;
 		for (x = 0; x < width; x++) {
-			c_re = (-centerX + x) * scaleFactor;
+			c_re = (x - centerX) * scaleFactor;
 			z_re = 0;
 			z_re_temp = 0;
 			z_im_temp = 0;
@@ -106,7 +98,7 @@ void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
 			}
 			if (isInside) {
 				BSP_LCD_DrawPixel(x, y, 0xFF000000);
-			} else if (n > halfIt) {
+			} else if (n > halfIterations) {
 				shade_red = n * color_factor;
 				col = (shade_red << 8) + (shade_red << 16) + (255 << 24);
 				BSP_LCD_DrawPixel(x, y, col);
@@ -168,8 +160,8 @@ int main(void) {
 
 	TS_StateTypeDef ts;
 	uint8_t globalScale = 1;
-	float factorX = 0.5;
-	float factorY = 0.5;
+	uint16_t centerX = 240;
+	uint16_t centerY = 136;
 
 	uint16_t iterations = 1;
 
@@ -178,12 +170,12 @@ int main(void) {
 			BSP_TS_GetState(&ts);
 			if (!ts.touchDetected) {
 				flag = 0;
-				globalScale++;
-				factorX = 1 - 1.0 * ts.touchX[0] / BSP_LCD_GetXSize();
-				factorY = 1 - 1.0 * ts.touchY[0] / BSP_LCD_GetYSize();
+				globalScale *= 2;
+				centerX = BSP_LCD_GetXSize() - ts.touchX[0];
+				centerY = BSP_LCD_GetYSize() - ts.touchY[0];
 			}
 		}
-		drawMandelbrotAlternative(globalScale, iterations++, factorX, factorY);
+		drawMandelbrotAlternative(globalScale, iterations++, centerX, centerY);
 		HAL_Delay(5);
 	}
 }
