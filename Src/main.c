@@ -2,12 +2,51 @@
 
 static void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
-
+static void drawMandelbrotAlternative(uint8_t, uint16_t, uint16_t, uint16_t);
 volatile uint8_t flag = 0;
 
-void EXTI15_10_IRQHandler() {
-	__HAL_GPIO_EXTI_CLEAR_IT(TS_INT_PIN);
-	flag = 1;
+int main(void) {
+	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
+
+	CPU_CACHE_Enable();
+
+	HAL_Init();
+
+	SystemClock_Config();
+
+	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC;
+	PeriphClkInitStruct.PLLSAI.PLLSAIN = 192;
+	PeriphClkInitStruct.PLLSAI.PLLSAIR = 5;
+	PeriphClkInitStruct.PLLSAIDivR = RCC_PLLSAIDIVR_4;
+	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
+
+	BSP_LCD_Init();
+	BSP_LCD_LayerDefaultInit(0, LCD_FB_START_ADDRESS);
+	BSP_LCD_DisplayOn();
+	BSP_LCD_SelectLayer(0);
+
+	BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+	BSP_TS_ITConfig();
+
+	TS_StateTypeDef ts;
+	uint8_t globalScale = 1;
+	uint16_t iterations = 1;
+	uint16_t centerX = 240;
+	uint16_t centerY = 136;
+
+	while (1) {
+		if (flag) {
+			BSP_TS_GetState(&ts);
+			if (!ts.touchDetected) {
+				flag = 0;
+				globalScale *= 2;
+				centerX = BSP_LCD_GetXSize() - ts.touchX[0];
+				centerY = BSP_LCD_GetYSize() - ts.touchY[0];
+			}
+		}
+		drawMandelbrotAlternative(globalScale, iterations++, centerX, centerY);
+		HAL_Delay(5);
+	}
 }
 
 void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
@@ -58,50 +97,6 @@ void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
 	}
 }
 
-int main(void) {
-	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
-
-	CPU_CACHE_Enable();
-
-	HAL_Init();
-
-	SystemClock_Config();
-
-	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC;
-	PeriphClkInitStruct.PLLSAI.PLLSAIN = 192;
-	PeriphClkInitStruct.PLLSAI.PLLSAIR = 5;
-	PeriphClkInitStruct.PLLSAIDivR = RCC_PLLSAIDIVR_4;
-	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
-
-	BSP_LCD_Init();
-	BSP_LCD_LayerDefaultInit(0, LCD_FB_START_ADDRESS);
-	BSP_LCD_DisplayOn();
-	BSP_LCD_SelectLayer(0);
-
-	BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
-	BSP_TS_ITConfig();
-
-	TS_StateTypeDef ts;
-	uint8_t globalScale = 1;
-	uint16_t iterations = 1;
-	uint16_t centerX = 240;
-	uint16_t centerY = 136;
-
-	while (1) {
-		if (flag) {
-			BSP_TS_GetState(&ts);
-			if (!ts.touchDetected) {
-				flag = 0;
-				globalScale *= 2;
-				centerX = BSP_LCD_GetXSize() - ts.touchX[0];
-				centerY = BSP_LCD_GetYSize() - ts.touchY[0];
-			}
-		}
-		drawMandelbrotAlternative(globalScale, iterations++, centerX, centerY);
-		HAL_Delay(5);
-	}
-}
-
 void SystemClock_Config(void) {
 	RCC_ClkInitTypeDef RCC_ClkInitStruct;
 	RCC_OscInitTypeDef RCC_OscInitStruct;
@@ -148,6 +143,11 @@ void SystemClock_Config(void) {
 static void CPU_CACHE_Enable(void) {
 	SCB_EnableICache();
 	SCB_EnableDCache();
+}
+
+void EXTI15_10_IRQHandler() {
+	__HAL_GPIO_EXTI_CLEAR_IT(TS_INT_PIN);
+	flag = 1;
 }
 
 #ifdef  USE_FULL_ASSERT
