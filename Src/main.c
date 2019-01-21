@@ -62,6 +62,11 @@ void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
 	char isInside = 1;
 	uint16_t y, x;
 
+	// try to calculate c_im_0 and c_re_0 for x0,y0 of touch - then substract it from c_im and c_re
+	// c_im_0 = (centerY - halfHeight) * scaleFactor
+	// c_re_0 = (centerX - halfWidth) * scaleFactor
+	// maybe in main? and put it as a function argument in place of centerX/Y
+
 	for (y = 0; y < height; y++) {
 		c_im = (y - centerY) * scaleFactor;
 		for (x = 0; x < width; x++) {
