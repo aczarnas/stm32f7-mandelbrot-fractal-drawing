@@ -1,9 +1,5 @@
 #include <main.h>
 
-osThreadId drawFractalHandle;
-osThreadId getTSHandle;
-osThreadId getButtonHandle;
-
 static void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
 
