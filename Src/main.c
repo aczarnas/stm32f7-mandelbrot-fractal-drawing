@@ -39,9 +39,9 @@ int main(void) {
 			BSP_TS_GetState(&ts);
 			if (!ts.touchDetected) {
 				flag = 0;
-				globalScale *= 2;
-				centerX = BSP_LCD_GetXSize() - ts.touchX[0];
-				centerY = BSP_LCD_GetYSize() - ts.touchY[0];
+				globalScale++;
+				centerX = ts.touchX[0];
+				centerY = ts.touchY[0];
 			}
 		}
 		drawMandelbrotAlternative(globalScale, iterations++, centerX, centerY);
@@ -50,27 +50,34 @@ int main(void) {
 }
 
 void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
-		const uint16_t centerX, const uint16_t centerY) {
+		const uint16_t zeroX, const uint16_t zeroY) {
 	const uint16_t height = 272;
+	const uint8_t halfHeight = 136;
 	const uint16_t width = 480;
+	const uint8_t halfWidth = 240;
 	const float scaleFactor = 4.0 / width / scale;
-	float c_re, c_im, z_re, z_re_temp, z_im_temp, z_im, n;
 	const float halfIterations = iterations / 2;
+
+	const float c_im_0 = (zeroY - halfHeight) * scaleFactor;
+	const float c_re_0 = (zeroX - halfWidth) * scaleFactor;
+
 	const float color_factor = 255 / iterations;
 	uint8_t shade_red = 255;
 	uint32_t col = 0xFFFF0000;
 	char isInside = 1;
+
+	float c_re, c_im, z_re, z_re_temp, z_im_temp, z_im, n;
 	uint16_t y, x;
 
 	// try to calculate c_im_0 and c_re_0 for x0,y0 of touch - then substract it from c_im and c_re
 	// c_im_0 = (centerY - halfHeight) * scaleFactor
 	// c_re_0 = (centerX - halfWidth) * scaleFactor
-	// maybe in main? and put it as a function argument in place of centerX/Y
+	// maybe in main? and put it as a function argument in place of zeroX/Y
 
 	for (y = 0; y < height; y++) {
-		c_im = (y - centerY) * scaleFactor;
+		c_im = (y - halfHeight) * scaleFactor + c_im_0;
 		for (x = 0; x < width; x++) {
-			c_re = (x - centerX) * scaleFactor;
+			c_re = (x - halfWidth) * scaleFactor + c_re_0;
 			z_re = 0;
 			z_re_temp = 0;
 			z_im_temp = 0;
