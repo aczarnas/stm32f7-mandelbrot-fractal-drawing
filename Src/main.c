@@ -58,8 +58,8 @@ void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
 	const float scaleFactor = 4.0 / width / scale;
 	const float halfIterations = iterations / 2;
 
-	const float c_im_0 = (zeroY - halfHeight) * scaleFactor;
-	const float c_re_0 = (zeroX - halfWidth) * scaleFactor;
+	const float c_im_0 = (zeroY - halfHeight) * 4.0 / width;
+	const float c_re_0 = (zeroX - halfWidth) * 4.0 / width;
 
 	const float color_factor = 255 / iterations;
 	uint8_t shade_red = 255;
