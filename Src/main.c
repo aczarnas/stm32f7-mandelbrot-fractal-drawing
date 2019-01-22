@@ -2,12 +2,11 @@
 
 static void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
-static void drawMandelbrotAlternative(uint8_t, uint16_t, uint16_t, uint16_t);
+static void drawMandelbrotAlternative(uint8_t, uint16_t, float, float);
 volatile uint8_t flag = 0;
 
 int main(void) {
 	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
-
 	CPU_CACHE_Enable();
 
 	HAL_Init();
@@ -25,41 +24,45 @@ int main(void) {
 	BSP_LCD_DisplayOn();
 	BSP_LCD_SelectLayer(0);
 
-	BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+	uint16_t width = BSP_LCD_GetXSize();
+	uint16_t height = BSP_LCD_GetYSize();
+
+	BSP_TS_Init(width, height);
 	BSP_TS_ITConfig();
 
 	TS_StateTypeDef ts;
 	uint8_t globalScale = 1;
 	uint16_t iterations = 1;
-	uint16_t centerX = 240;
-	uint16_t centerY = 136;
+
+	float c_re_0 = 0;
+	float c_im_0 = 0;
 
 	while (1) {
 		if (flag) {
 			BSP_TS_GetState(&ts);
 			if (!ts.touchDetected) {
 				flag = 0;
+				uint16_t touchx = ts.touchX[0];
+				uint16_t touchy = ts.touchY[0];
+
+				c_re_0 = (touchx - width / 2) * 4.0 / width / globalScale;
+				c_im_0 = (touchy - height / 2) * 4.0 / width / globalScale;
 				globalScale++;
-				centerX = ts.touchX[0];
-				centerY = ts.touchY[0];
 			}
 		}
-		drawMandelbrotAlternative(globalScale, iterations++, centerX, centerY);
+		drawMandelbrotAlternative(globalScale, iterations++, c_re_0, c_im_0);
 		HAL_Delay(5);
 	}
 }
 
 void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
-		const uint16_t zeroX, const uint16_t zeroY) {
+		const float c_re_0, const float c_im_0) {
 	const uint16_t height = 272;
 	const uint8_t halfHeight = 136;
 	const uint16_t width = 480;
 	const uint8_t halfWidth = 240;
 	const float scaleFactor = 4.0 / width / scale;
 	const float halfIterations = iterations / 2;
-
-	const float c_im_0 = (zeroY - halfHeight) * 4.0 / width;
-	const float c_re_0 = (zeroX - halfWidth) * 4.0 / width;
 
 	const float color_factor = 255 / iterations;
 	uint8_t shade_red = 255;
@@ -68,11 +71,6 @@ void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
 
 	float c_re, c_im, z_re, z_re_temp, z_im_temp, z_im, n;
 	uint16_t y, x;
-
-	// try to calculate c_im_0 and c_re_0 for x0,y0 of touch - then substract it from c_im and c_re
-	// c_im_0 = (centerY - halfHeight) * scaleFactor
-	// c_re_0 = (centerX - halfWidth) * scaleFactor
-	// maybe in main? and put it as a function argument in place of zeroX/Y
 
 	for (y = 0; y < height; y++) {
 		c_im = (y - halfHeight) * scaleFactor + c_im_0;
