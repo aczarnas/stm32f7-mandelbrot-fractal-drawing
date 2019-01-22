@@ -2,7 +2,7 @@
 
 static void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
-static void drawMandelbrotAlternative(uint8_t, uint16_t, float, float);
+static void drawMandelbrotAlternative(uint16_t, uint16_t, float, float);
 volatile uint8_t flag = 0;
 
 int main(void) {
@@ -31,7 +31,7 @@ int main(void) {
 	BSP_TS_ITConfig();
 
 	TS_StateTypeDef ts;
-	uint8_t globalScale = 1;
+	uint16_t globalScale = 1;
 	uint16_t iterations = 1;
 
 	float c_re_0 = 0;
@@ -47,7 +47,7 @@ int main(void) {
 
 				c_re_0 += (touchx - width / 2) * 4.0 / width / globalScale;
 				c_im_0 += (touchy - height / 2) * 4.0 / width / globalScale;
-				globalScale++;
+				globalScale *= 2;
 			}
 		}
 		drawMandelbrotAlternative(globalScale, iterations++, c_re_0, c_im_0);
@@ -55,7 +55,7 @@ int main(void) {
 	}
 }
 
-void drawMandelbrotAlternative(const uint8_t scale, const uint16_t iterations,
+void drawMandelbrotAlternative(const uint16_t scale, const uint16_t iterations,
 		const float c_re_0, const float c_im_0) {
 	const uint16_t height = 272;
 	const uint8_t halfHeight = 136;
