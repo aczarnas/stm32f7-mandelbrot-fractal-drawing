@@ -45,8 +45,8 @@ int main(void) {
 				uint16_t touchx = ts.touchX[0];
 				uint16_t touchy = ts.touchY[0];
 
-				c_re_0 = (touchx - width / 2) * 4.0 / width / globalScale;
-				c_im_0 = (touchy - height / 2) * 4.0 / width / globalScale;
+				c_re_0 += (touchx - width / 2) * 4.0 / width / globalScale;
+				c_im_0 += (touchy - height / 2) * 4.0 / width / globalScale;
 				globalScale++;
 			}
 		}
